@@ -6,33 +6,30 @@
 '''
 import random as r
 from colorama import Back, Fore, Style
-import copy
 import time
-import playsound
+import subprocess
 
 #################################################################
-#################################################################
-#################################################################
-#          This is a puzzle game called Genius Square.          #        
-#################################################################
-#################################################################
+#          This is a puzzle game called Genius Square.          #
 #################################################################
 
-
-
-
 #################################################################
-#     These are all the GLOBAL VARIABLES used in the program.   #   
+#      Copyright (c) 2023 Viktor Pavlovic and Karlo Siric.      #
+#                     All rights reserved.                      #
 #################################################################
 
 
+#################################################################
+#  These are all the GLOBAL VARIABLES used in the program.     #
+#################################################################
 
 EMPTY_SPOT = '-'
 BLOCKER_SPOT = 'o'
 # L_SHAPE = [[[0, 0, 1], [1, 1, 1]], [[1, 0], [1, 0], [1, 1]], [[1, 1, 1], [1, 0, 0]], [[1, 1], [0, 1], [0, 1]], [[1,1,1], [0,0,1]], [[1,1], [1,0], [1,0]], [[1,1,1], [1,0,0]], [[0,1], [0,1], [1,1]]]
 # L SHAPE!
 
-## WE CRAETED THIS TO CHECK FOR ALL THE ROTATIONS OF ALL THE SHAPES!
+
+## WE CREATED THIS TO CHECK FOR ALL THE ROTATIONS OF ALL THE SHAPES!
 
 L_SHAPE_BASE = [[1, 0], [1, 0], [1, 1]] # BASE SHAPE
 # L_SHAPE_ROT1 = [[[0, 1], [0, 1], [1, 1]]] # left rotation
@@ -73,7 +70,6 @@ F_SHAPE_BASE = [[1, 1], [1, 0], [1, 1], [1, 0]]
 SYMBOLS_LIST = ["T", "t", "L", "l", "C", "z", "f", BLOCKER_SPOT]
 
 SYMBOL_NUMBERS = [1,2,3,4,5,6,7]
-SYMBOL_NUMBERS_STRING = ["1","2","3","4","5","6","7"]
 USED_SHAPES = []
 
 #Dice
@@ -84,8 +80,21 @@ DIE4 = [(4, 0), (5, 1), (5, 1), (1, 5), (0, 4), (0, 4)]
 DIE5 = [(0, 4), (1, 4), (2, 5), (2, 4), (3, 5), (5, 5)]
 DIE6 = [(4, 3), (5, 3), (4, 4), (5, 4), (3, 4), (4, 5)]
 DIE7 = [(5, 0), (5, 0), (5, 0), (0, 5), (0, 5), (0, 5)]
+
 DICE = [DIE1, DIE2, DIE3, DIE4, DIE5, DIE6, DIE7]
 
+#Colorama Colors
+
+COLORED_SYMBOLS = {
+    "T": f"{Back.MAGENTA}{Fore.WHITE}T{Back.RESET}",
+    "t": f"{Back.LIGHTMAGENTA_EX}{Fore.WHITE}t{Back.RESET}",
+    "L": f"{Back.CYAN}{Fore.WHITE}L{Back.RESET}",
+    "l": f"{Back.LIGHTRED_EX}{Fore.WHITE}l{Back.RESET}",
+    "C": f"{Back.LIGHTGREEN_EX}{Fore.WHITE}C{Back.RESET}",
+    "z": f"{Back.GREEN}{Fore.WHITE}z{Back.RESET}",
+    "f": f"{Back.YELLOW}{Fore.WHITE}f{Back.RESET}",
+    BLOCKER_SPOT: BLOCKER_SPOT
+}
 
 ######################################################
 #  These are our main classes used in the program.   # 
@@ -106,7 +115,7 @@ class Shape:
 
     def __str__(self) -> str:
         return f"{self.table} {self.position}"
-   
+
 class Puzzle:
     __slots__ = ["__board","blocker_locations"]
     def __init__(self, blocker_locations:tuple) -> None:
@@ -115,36 +124,19 @@ class Puzzle:
         for blocker in blocker_locations:
             self.__board[blocker[0]][blocker[1]] = BLOCKER_SPOT
     
-    
-###################################################################
-#   This is the main draw function that draws the shapes on the   #
-###################################################################    
-    
+    ###################################################################
+    #   This is the main draw function that draws the shapes on the   #
+    ###################################################################
+
     def draw(self, position:tuple, shape:Shape, symbol:str) -> None:
         shape.set_position(position)
         for row in range(len(shape.table)):
             for column in range(len(shape.table[row])):
                 if shape.table[row][column] == 1:
-
-                    """if symbol == "T":
-                        color = Back.MAGENTA
-                    elif symbol == "t":
-                        color = Back.LIGHTMAGENTA_EX
-                    elif symbol == "L":
-                        color = Back.CYAN
-                    elif symbol == "l":
-                        color = Back.LIGHTRED_EX
-                    elif symbol == "C":
-                        color = Back.LIGHTGREEN_EX
-                    elif symbol == "z":
-                        color = Back.GREEN
-                    elif symbol == "f":
-                        color = Back.YELLOW
+                    if symbol in COLORED_SYMBOLS:
+                        self.__board[row+position[0]][column+position[1]] = f"{COLORED_SYMBOLS[symbol]}"
                     else:
-                        color = Back.RESET
-
-                    self.__board[row+position[0]][column+position[1]] = f"{color}{Fore.WHITE}{symbol}{Back.RESET}"""
-                    self.__board[row+position[0]][column+position[1]] = symbol
+                        self.__board[row+position[0]][column+position[1]] = f"{Back.RESET}{symbol}"
 
     def get_board(self):
         return self.__board
@@ -162,74 +154,56 @@ class Puzzle:
             board += f"{index} | {rows_str[index]}\n"
         return board
 
-
 ############################################################
 #   This function prints out the options for the shapes.   #
 ############################################################
 
-
 def print_options():
     print("These are the shapes you can choose from:\n")
-    if "1" not in USED_SHAPES:
+    if 1 not in USED_SHAPES:
         print("1 = TTT \n     T\n     T\n")
-    if "2" not in USED_SHAPES:
+    if 2 not in USED_SHAPES:
         print("2 = ttt \n     t\n     t\n")
-    if "3" not in USED_SHAPES:
+    if 3 not in USED_SHAPES:
         print("3 = L\n    L\n    LL\n")
-    if "4" not in USED_SHAPES:
+    if 4 not in USED_SHAPES:
         print("4 = l\n    ll\n")
-    if "5" not in USED_SHAPES:
+    if 5 not in USED_SHAPES:
         print("5 = CC\n    C\n    CC\n")
-    if "6" not in USED_SHAPES:
+    if 6 not in USED_SHAPES:
         print("6 = zz\n     zz\n")
-    if "7" not in USED_SHAPES:
+    if 7 not in USED_SHAPES:
         print("7 = ff\n    f\n    ff\n    f\n\n")
+    """print("1 = TTT \t\t 2 = ttt \t\t 3 = L\
+          \n     T \t\t\t      t \t\t     L\
+          \n     T \t\t\t        \t\t     LL\n\n")
+    print("4 = l \t\t 5 = CC  \t\t 6 = zz\
+          \n    ll \t\t      C \t\t      zz\
+          \n       \t\t     CC \t\t       \n\n")
 
-
-    # print("1 = TTT \t\t 2 = ttt \t\t 3 = L\
-    #       \n     T \t\t\t      t \t\t     L\
-    #       \n     T \t\t\t        \t\t     LL\n\n")
-    # print("4 = l \t\t 5 = CC  \t\t 6 = zz\
-    #       \n    ll \t\t      C \t\t      zz\
-    #       \n       \t\t     CC \t\t       \n\n")
-
-    # print("7 = ff\n    f\n    ff\n    f\n\n")
+    print("7 = ff\n    f\n    ff\n    f\n\n")"""
 
 ############################################################
 #    This function asks the user to choose a shape.        #
 #   It also checks if the shape is already placed.         #
 #   If it is, it asks the user to choose another shape.    #
-############################################################    
+############################################################
 
 def ask_shape():
     while True:
         userInputShape = input("Choose which shape to place (O for options): ").lower()
 
-        if userInputShape == "o":
-            print_options()
-        elif userInputShape in SYMBOL_NUMBERS_STRING and userInputShape not in USED_SHAPES:
-            USED_SHAPES.append(userInputShape)
-            return int(userInputShape)
-        else:
-            print("Invalid input or shape already placed.Please choose another shape!")
-            
-        
-        
-        # elif userInputShape == "1":
-        #     return 1
-        # elif userInputShape == "2":
-        #     return 2
-        # elif userInputShape == "3":
-        #     return 3
-        # elif userInputShape == "4":
-        #     return 4
-        # elif userInputShape == "5":
-        #     return 5
-        # elif userInputShape == "6":
-        #     return 6
-        # elif userInputShape == "7":
-        #     return 7
+        try:
+            userInputShape = int(userInputShape)
 
+            if userInputShape in SYMBOL_NUMBERS and userInputShape not in USED_SHAPES:
+                USED_SHAPES.append(userInputShape)
+                return userInputShape
+        except ValueError:
+            if userInputShape == "o":
+                print_options()
+            elif userInputShape == "q":
+                return None
 
 ############################################################
 #    This function asks the user to choose a position.     #
@@ -237,17 +211,25 @@ def ask_shape():
 
 def ask_position():
     while True:
+        userInputPositionY = input("Choose in which column to place the shape: ").lower()
+        if userInputPositionY == "q":
+            return True
+        
+        userInputPositionX = input("Choose in which row to place the shape: ").lower()
+        if userInputPositionX == "q":
+            return True
+
         try:
-            userInputPositionY = int(input("Choose in which column to place the shape: "))
-            userInputPositionX = int(input("Choose in which row to place the shape: "))
+            userInputPositionX = int(userInputPositionX)
+            userInputPositionY = int(userInputPositionY)
+
+            if userInputPositionX >= 0 and userInputPositionX <= 5 and userInputPositionY >= 0 and userInputPositionY <= 5:
+                return (userInputPositionX, userInputPositionY)
         except ValueError:
             continue
 
-        if userInputPositionX >= 0 and userInputPositionX <= 5 and userInputPositionY >= 0 and userInputPositionY <= 5:
-            return (userInputPositionX, userInputPositionY)
-
 ############################################################
-#    This function creates the shapes.                     #
+#            This function creates the shapes.             #
 ############################################################
 
 def make_shape(s_type:int):
@@ -266,7 +248,6 @@ def make_shape(s_type:int):
     elif s_type == 7:
         return Shape(F_SHAPE_BASE), "f"
 
-
 ############################################################
 #    This function checks if the shape is already placed.  #
 ############################################################
@@ -274,7 +255,10 @@ def make_shape(s_type:int):
 def shaper():
     while True:
         s_type = ask_shape()
-        if s_type not in SYMBOL_NUMBERS:
+
+        if s_type == None:
+            return True, True
+        elif s_type not in SYMBOL_NUMBERS:
             print("That shape is already placed!")
             print("Please choose another shape!")
             continue
@@ -287,24 +271,20 @@ def shaper():
 #    This function creates the blockers.                   #
 ############################################################
 
-
 def blockers(amount:int):
     blocker_locations = []
-
+    
     for index in range(amount):
         if index > len(DICE):
             return "Invalid Input {}".format(amount)
         else:
             blocker_locations.append(r.choice(DICE[index]))
-
+    
     return blocker_locations
 
-#####################################
-#####################################
 ############ ROTATIONS  #############
 #####################################
 #####################################
-
 
 def rotate_shape_left(shape:Shape):
     return list(zip(*reversed(shape)))
@@ -340,10 +320,13 @@ def rotate_shape(shape:Shape, s_letter):
                     puzzle.draw((2, 2), shape, s_letter)
                     print(puzzle)
                 elif userInputRotate == "c":
-                    break
-            break
+                    return False
+                elif userInputRotate == "q":
+                    return True
         elif userInputRotateBool == "n":
-            break
+            return False
+        elif userInputRotateBool == "q":
+            return True
 
 #############################################
 #   This function creates a tuple of tuples #
@@ -351,7 +334,6 @@ def rotate_shape(shape:Shape, s_letter):
 #   the symbols on the board except         #
 #   the empty spots.                        #
 #############################################
-
 
 def get_coords(symbols: list, puzzle: Puzzle):
     coords = []
@@ -370,8 +352,6 @@ def get_coords(symbols: list, puzzle: Puzzle):
 #   with the blockers.                         #
 ################################################
 
-
-
 def check_collision(shape: Shape, blockers: tuple):
     for row in range(len(shape.table)):
             for column in range(len(shape.table[row])):
@@ -385,24 +365,34 @@ def check_collision(shape: Shape, blockers: tuple):
 #   if there is no collision.                  #
 ################################################
 
-
 def shape_draw(shape: Shape, puzzle: Puzzle, s_letter):
     while True:
         userInputPosition = ask_position()
+        if userInputPosition == True:
+            return True
         shape.position = userInputPosition
-        if check_collision(shape, get_coords(SYMBOLS_LIST, puzzle)):
+        if check_collision(shape, get_coords(COLORED_SYMBOLS.values(), puzzle)):
             print("Can't place shape there, place is already occupied!")
         elif shape.position[0] < 0 or shape.position[1] < 0 or shape.position[0] + len(shape.table) > 6 or shape.position[1] + len(shape.table[0]) > 6:
             print("Can't place shape there, it is out of bounds!")
         else:
             puzzle.draw(shape.position, shape, s_letter)
             break
+            
+
+def is_won(puzzle: Puzzle):
+    board = puzzle.get_board()
+    for row in range(len(board)):
+        for column in range(len(board[row])):
+            if board[row][column] == EMPTY_SPOT:
+                return False
+    
+    return True
 
 #################################################
 #   This function asks the user if he wants to  #
 #   quit or continue playing.                   #
 #################################################
-
 
 def prompt_quit():
     while True:
@@ -422,100 +412,121 @@ def prompt_quit():
 #   and the rules of the game.                  #
 #################################################
 
-
-
 def rules():
-    time.sleep(2)
-    print(Style.BRIGHT + Fore.RED + "\033[1m" + "Welcome to the Genius Square game!\n" + "\033[0m\n" + Style.RESET_ALL)
     time.sleep(1)
+    print(Style.BRIGHT + Fore.RED + "\033[1m" + "Welcome to the Genius Square game!\n" + "\033[0m\n" + Style.RESET_ALL)
+    time.sleep(2)
     print(Style.BRIGHT + Fore.RED + "\033[1m" + "The rules are simple:\n" + "\033[0m\n" + Style.RESET_ALL)
     time.sleep(1)
     print(Style.BRIGHT + Fore.RED + "\033[1m" + "You will be given a shape and you will have to place it on the board.\n" + "\033[0m\n" + Style.RESET_ALL)
-    time.sleep(1)
+    time.sleep(2)
     print(Style.BRIGHT + Fore.RED + "\033[1m" + "You will have to place all the shapes on the board without overlapping them or placing them on the blockers.\n" + "\033[0m\n" + Style.RESET_ALL)
-    time.sleep(1)
+    time.sleep(3)
     print(Style.BRIGHT + Fore.RED + "\033[1m" + "You can rotate the shapes by choosing the left or right rotation or reversing them.\n" + "\033[0m\n" + Style.RESET_ALL)
-    time.sleep(1)
-    print(Style.BRIGHT + Fore.RED + "\033[1m" + "If you do not complete the game within 3 minutes then your final game score will be deducted by 500 points.\n" + "\033[0m\n" + Style.RESET_ALL)
-    time.sleep(1)
-    print(Style.BRIGHT + Fore.RED + "\033[1m" + "If you complete the game within 3 minutes then your final game score will be increased by 500 points.\n" + "\033[0m\n" + Style.RESET_ALL)
-    time.sleep(1)
+    time.sleep(2)
+    print(Style.BRIGHT + Fore.RED + "\033[1m" + "If you do not complete the game within 3 minutes then your final game score will be deducted by 1000 points.\n" + "\033[0m\n" + Style.RESET_ALL)
+    time.sleep(3)
+    print(Style.BRIGHT + Fore.RED + "\033[1m" + "If you complete the game within 3 minutes then your final game score will be increased by 1000 points.\n" + "\033[0m\n" + Style.RESET_ALL)
+    time.sleep(3)
     print(Style.BRIGHT + Fore.RED + "\033[1m" + "Your score will be shown after you either complete the game or choose the easy way out.\n" + "\033[0m\n" + Style.RESET_ALL)
-    time.sleep(1)
+    time.sleep(2)
+    print(Style.BRIGHT + Fore.RED + "\033[1m" + "You can quit by typing Q whenever you want.\n" + "\033[0m\n" + Style.RESET_ALL)
+    time.sleep(2)
     print(Style.BRIGHT + Fore.RED + "\033[1m" + "Good luck and have fun!\n" + "\033[0m\n" + Style.RESET_ALL)
-    time.sleep(1)
+    time.sleep(2)
 
-##################################################
-#   This function asked the user to choose the   #
-#           difficulty level.                    #   
-#   It also prints out the rules of the game.    #
-#   It returns the amount of blockers.           #
-#   This function is not used in the program.    #
-#   ---FOR TESTING PURPOSES ONLY---              #                  
-##################################################
-    
-    
-    #--------------------------------------------#
-    # while True:
-    #     userInputDifficulty = input("Choose your difficulty level (E/M/H): ").lower()
-    #     if userInputDifficulty == "e":
-    #         print("You have chosen Easy difficulty level!\n")
-    #         print("Good luck!\n")
-    #         return 3 
-    #     elif userInputDifficulty == "m":
-    #         print("You have chosen Medium difficulty level!\n")
-    #         print("Good luck!\n")
-    #         return 5
-    #     elif userInputDifficulty == "h":
-    #         print("You have chosen Hard difficulty level!\n")
-    #         print("Good luck!\n")
-    #         return 7
-    #     else:
-    #         print("Invalid input!")
-    #         print("Please enter E, M or H!")
-    #--------------------------------------------#
+    ##################################################
+    #   This function asked the user to choose the   #
+    #           difficulty level.                    #   
+    #   It also prints out the rules of the game.    #
+    #   It returns the amount of blockers.           #
+    #   This function is not used in the program.    #
+    #   ---FOR TESTING PURPOSES ONLY---              #                  
+    ##################################################
+
+    """while True:
+        userInputDifficulty = input("Choose your difficulty level (E/M/H): ").lower()
+        if userInputDifficulty == "e":
+            time.sleep(1)
+            print("You have chosen Easy difficulty level!\n")
+            time.sleep(1)
+            print("Good luck!\n")
+            time.sleep(1)
+            return 3, False 
+        elif userInputDifficulty == "m":
+            time.sleep(1)
+            print("You have chosen Medium difficulty level!\n")
+            time.sleep(1)
+            print("Good luck!\n")
+            time.sleep(1)
+            return 5, False
+        elif userInputDifficulty == "h":
+            time.sleep(1)
+            print("You have chosen Hard difficulty level!\n")
+            time.sleep(1)
+            print("Good luck!\n")
+            time.sleep(1)
+            return 7, False
+        elif userInputDifficulty == "q":
+            return None, True
+        else:
+            print("Invalid input!")
+            print("Please enter E, M or H!")"""
 
 #################################################
 #   This function calculates the score.         #
 #################################################
-
 
 def calculate_score(shape: Shape, score):
 
     shape_score = len(shape.table) * len(shape.table[0])
     return score + shape_score
 
+
 #################################################
 #   This is the main function.                  #
 #################################################
 
-
-    
 def main():
-    # rules()
+    rules()
+    
     blocker_locations = blockers(5)
     puzzle = Puzzle(blocker_locations)
     print(puzzle)
+
     score = 0
     start = time.perf_counter()
+
     while True:
         shape, s_letter = shaper()
-        rotate_shape(shape, s_letter)
+        if shape == True:
+            break
+        value = rotate_shape(shape, s_letter)
+        if value == True:
+            break
         print(puzzle)
-        shape_draw(shape, puzzle, s_letter)
+        value = shape_draw(shape, puzzle, s_letter)
+        if value == True:
+            break
         print(puzzle)
         score += calculate_score(shape, score)
-        if prompt_quit():
+        if is_won(puzzle):
+            time.sleep(1)
+            score += 1000
+            print("Congratulations!")
+            print("YOU WIN!")
+            time.sleep(1)
+            print("Thank You for playing!")
             break
     end = time.perf_counter()
     total_time = end - start
-    print(f"Your time is {total_time:2f} seconds!")
+
+    print("TIME ELAPSED: \t\t {}".format(total_time))
     if total_time > 180 and score > 0:
-        score -= 500
-    else:
-        score += 500
+        score -= 1000
+    print("SCORE: \t\t\t {}".format(score))
     
-    print(f"Your score is {score}!")
-    
+
+
 if __name__ == "__main__":
     main()
