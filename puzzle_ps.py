@@ -12,7 +12,9 @@ import playsound
 
 #################################################################
 #################################################################
+#################################################################
 #          This is a puzzle game called Genius Square.          #        
+#################################################################
 #################################################################
 #################################################################
 
@@ -72,6 +74,7 @@ SYMBOLS_LIST = ["T", "t", "L", "l", "C", "z", "f", BLOCKER_SPOT]
 
 SYMBOL_NUMBERS = [1,2,3,4,5,6,7]
 SYMBOL_NUMBERS_STRING = ["1","2","3","4","5","6","7"]
+USED_SHAPES = []
 
 #Dice
 DIE1 = [(0, 0), (2, 0), (3, 0), (3, 1), (4, 1), (5, 2)]
@@ -164,23 +167,22 @@ class Puzzle:
 #   This function prints out the options for the shapes.   #
 ############################################################
 
-used_shapes = []
 
 def print_options():
     print("These are the shapes you can choose from:\n")
-    if "1" not in used_shapes:
+    if "1" not in USED_SHAPES:
         print("1 = TTT \n     T\n     T\n")
-    if "2" not in used_shapes:
+    if "2" not in USED_SHAPES:
         print("2 = ttt \n     t\n     t\n")
-    if "3" not in used_shapes:
+    if "3" not in USED_SHAPES:
         print("3 = L\n    L\n    LL\n")
-    if "4" not in used_shapes:
+    if "4" not in USED_SHAPES:
         print("4 = l\n    ll\n")
-    if "5" not in used_shapes:
+    if "5" not in USED_SHAPES:
         print("5 = CC\n    C\n    CC\n")
-    if "6" not in used_shapes:
+    if "6" not in USED_SHAPES:
         print("6 = zz\n     zz\n")
-    if "7" not in used_shapes:
+    if "7" not in USED_SHAPES:
         print("7 = ff\n    f\n    ff\n    f\n\n")
 
 
@@ -205,8 +207,8 @@ def ask_shape():
 
         if userInputShape == "o":
             print_options()
-        elif userInputShape in SYMBOL_NUMBERS_STRING and userInputShape not in used_shapes:
-            used_shapes.append(userInputShape)
+        elif userInputShape in SYMBOL_NUMBERS_STRING and userInputShape not in USED_SHAPES:
+            USED_SHAPES.append(userInputShape)
             return int(userInputShape)
         else:
             print("Invalid input or shape already placed.Please choose another shape!")
@@ -297,6 +299,8 @@ def blockers(amount:int):
 
     return blocker_locations
 
+#####################################
+#####################################
 ############ ROTATIONS  #############
 #####################################
 #####################################
